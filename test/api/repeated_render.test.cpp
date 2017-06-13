@@ -11,6 +11,7 @@
 #include <mbgl/util/io.hpp>
 #include <mbgl/util/run_loop.hpp>
 #include <mbgl/style/style.hpp>
+#include <mbgl/test/stub_renderer_frontend.hpp>
 #include <mbgl/style/layers/line_layer.hpp>
 #include <mbgl/style/sources/geojson_source.hpp>
 
@@ -28,17 +29,22 @@ TEST(API, RepeatedRender) {
     HeadlessBackend backend { test::sharedDisplay() };
     BackendScope scope { backend };
     OffscreenView view { backend.getContext(), { 512, 512 } };
+    float pixelRatio { 1 };
+    MapMode mode { MapMode::Still };
     DefaultFileSource fileSource(":memory:", "test/fixtures/api/assets");
     ThreadPool threadPool(4);
+    StubRendererFrontend rendererFrontend { backend, view, fileSource, threadPool, pixelRatio,
+                                            mode };
 
     Log::setObserver(std::make_unique<FixtureLogObserver>());
 
-    Map map(backend, MapObserver::nullObserver(), view.getSize(), 1, fileSource, threadPool, MapMode::Still);
+    Map map(rendererFrontend, MapObserver::nullObserver(), view.getSize(), pixelRatio, fileSource,
+            threadPool, mode);
 
     {
         map.getStyle().loadJSON(style);
         PremultipliedImage result;
-        map.renderStill(view, [&](std::exception_ptr) {
+        map.renderStill([&](std::exception_ptr) {
             result = view.readStillImage();
         });
 
@@ -54,7 +60,7 @@ TEST(API, RepeatedRender) {
     {
         map.getStyle().loadJSON(style);
         PremultipliedImage result;
-        map.renderStill(view, [&](std::exception_ptr) {
+        map.renderStill([&](std::exception_ptr) {
             result = view.readStillImage();
         });
 
@@ -86,7 +92,11 @@ TEST(API, ZoomHistory) {
 
     Log::setObserver(std::make_unique<FixtureLogObserver>());
 
-    Map map(backend, MapObserver::nullObserver(), view.getSize(), 1, fileSource, threadPool, MapMode::Still);
+    float pixelRatio { 1 };
+    MapMode mode { MapMode::Still };
+    StubRendererFrontend rendererFrontend { backend, view, fileSource, threadPool, pixelRatio,
+                                            mode };
+    Map map(rendererFrontend, MapObserver::nullObserver(), view.getSize(), pixelRatio, fileSource, threadPool, mode);
     map.getStyle().loadJSON(style);
 
     auto geojson = mapbox::geojson::parse(R"t({ "type": "FeatureCollection", "features": [{ "type": "Feature", "properties": {}, "geometry": { "type": "LineString", "coordinates": [ [ -150, -75 ], [  150,  75 ] ] } } ] })t");
@@ -101,7 +111,7 @@ TEST(API, ZoomHistory) {
 
     {
         PremultipliedImage result;
-        map.renderStill(view, [&](std::exception_ptr) {
+        map.renderStill([&](std::exception_ptr) {
             result = view.readStillImage();
         });
 
@@ -116,7 +126,7 @@ TEST(API, ZoomHistory) {
         map.setZoom(1.0);
 
         PremultipliedImage result;
-        map.renderStill(view, [&](std::exception_ptr) {
+        map.renderStill([&](std::exception_ptr) {
             result = view.readStillImage();
         });
 
