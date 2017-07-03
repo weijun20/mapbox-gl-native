@@ -7,6 +7,7 @@
 #include <mbgl/gl/offscreen_view.hpp>
 #include <mbgl/util/default_thread_pool.hpp>
 #include <mbgl/storage/default_file_source.hpp>
+#include <mbgl/renderer/renderer.hpp>
 #include <mbgl/util/image.hpp>
 #include <mbgl/util/io.hpp>
 #include <mbgl/util/run_loop.hpp>
@@ -33,8 +34,8 @@ TEST(API, RepeatedRender) {
     MapMode mode { MapMode::Still };
     DefaultFileSource fileSource(":memory:", "test/fixtures/api/assets");
     ThreadPool threadPool(4);
-    StubRendererFrontend rendererFrontend { backend, view, fileSource, threadPool, pixelRatio,
-                                            mode };
+    StubRendererFrontend rendererFrontend {
+            std::make_unique<Renderer>(backend, pixelRatio, fileSource, threadPool, mode), view };
 
     Log::setObserver(std::make_unique<FixtureLogObserver>());
 
@@ -94,8 +95,8 @@ TEST(API, ZoomHistory) {
 
     float pixelRatio { 1 };
     MapMode mode { MapMode::Still };
-    StubRendererFrontend rendererFrontend { backend, view, fileSource, threadPool, pixelRatio,
-                                            mode };
+    StubRendererFrontend rendererFrontend {
+            std::make_unique<Renderer>(backend, pixelRatio, fileSource, threadPool, mode), view };
     Map map(rendererFrontend, MapObserver::nullObserver(), view.getSize(), pixelRatio, fileSource, threadPool, mode);
     map.getStyle().loadJSON(style);
 
