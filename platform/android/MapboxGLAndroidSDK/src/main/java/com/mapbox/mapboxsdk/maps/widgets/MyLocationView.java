@@ -45,6 +45,7 @@ import java.lang.ref.WeakReference;
  */
 public class MyLocationView extends View {
 
+  private static final int UNDEFINED_FOREGROUND_TINT_COLOR = -1;
   private MyLocationBehavior myLocationBehavior;
   private MapboxMap mapboxMap;
 
@@ -176,11 +177,10 @@ public class MyLocationView extends View {
   }
 
   public final void setForegroundDrawableTint(@ColorInt int color) {
-    if (foregroundDrawable != null) {
-      foregroundDrawable.mutate().setColorFilter(color, PorterDuff.Mode.SRC_IN);
-    }
-    if (foregroundBearingDrawable != null) {
-      foregroundBearingDrawable.mutate().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    if (color == UNDEFINED_FOREGROUND_TINT_COLOR) {
+      removeForegroundTintColorFilter();
+    } else {
+      applyForegroundTintColorFilter(color);
     }
     invalidate();
   }
@@ -555,6 +555,24 @@ public class MyLocationView extends View {
 
   public void setLocationSource(LocationEngine locationSource) {
     this.locationSource = locationSource;
+  }
+
+  private void removeForegroundTintColorFilter() {
+    if (foregroundDrawable != null) {
+      foregroundDrawable.mutate().setColorFilter(null);
+    }
+    if (foregroundBearingDrawable != null) {
+      foregroundBearingDrawable.mutate().setColorFilter(null);
+    }
+  }
+
+  private void applyForegroundTintColorFilter(@ColorInt int color) {
+    if (foregroundDrawable != null) {
+      foregroundDrawable.mutate().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }
+    if (foregroundBearingDrawable != null) {
+      foregroundBearingDrawable.mutate().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+    }
   }
 
   private static class GpsLocationListener implements LocationEngineListener {

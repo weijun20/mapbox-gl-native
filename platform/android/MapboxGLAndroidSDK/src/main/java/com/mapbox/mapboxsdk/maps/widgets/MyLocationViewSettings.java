@@ -5,9 +5,9 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 
+import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.constants.MyLocationTracking;
 import com.mapbox.mapboxsdk.maps.FocalPointChangeListener;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.Projection;
 
@@ -16,6 +16,7 @@ import com.mapbox.mapboxsdk.maps.Projection;
  */
 public class MyLocationViewSettings {
 
+  private static final int UNDEFINED_FOREGROUND_TINT_COLOR = -1;
   private Projection projection;
   private MyLocationView myLocationView;
   private FocalPointChangeListener focalPointChangeListener;
@@ -114,6 +115,7 @@ public class MyLocationViewSettings {
    * <p>
    * The foreground drawable is the image visible on screen
    * </p>
+   * It's linked with the foreground tint color
    *
    * @param foregroundDrawable        the drawable to show as foreground without bearing
    * @param foregroundBearingDrawable the drawable to show as foreground when bearing is enabled
@@ -122,6 +124,7 @@ public class MyLocationViewSettings {
     this.foregroundDrawable = foregroundDrawable;
     this.foregroundBearingDrawable = foregroundBearingDrawable;
     myLocationView.setForegroundDrawables(foregroundDrawable, foregroundBearingDrawable);
+    myLocationView.setForegroundDrawableTint(foregroundTintColor);
   }
 
   /**
@@ -148,7 +151,8 @@ public class MyLocationViewSettings {
    * The color will tint both the foreground and the bearing foreground drawable.
    * </p>
    *
-   * @param foregroundTintColor the color to tint the foreground drawable
+   * @param foregroundTintColor the color to tint the foreground drawable or -1 (undefined color) to remove the
+   *                            existing foreground tint color
    */
   public void setForegroundTintColor(@ColorInt int foregroundTintColor) {
     this.foregroundTintColor = foregroundTintColor;
